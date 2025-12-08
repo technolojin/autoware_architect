@@ -307,6 +307,9 @@ class Process:
                         break
                 if self.event.actions == []:
                     raise ValueError(f"Trigger event not found: {outcome_value}")
+            elif outcome_type == "terminal":
+                # end of event chain
+                break
         logger.debug(
             f"Process '{self.unique_id}' outcomes configured: actions={[a.unique_id for a in self.event.actions]}"
         )

@@ -2,8 +2,8 @@
 name: LidarDummyDriver.node
 
 launch:
-  package: autoware_perception_dummy_nodes
-  plugin: autoware::perception_dummy_nodes::LidarDummyDriver
+  package: autoware_architect_dummy_modules
+  plugin: autoware::architect_dummy_modules::LidarDummyDriver
 
 # interfaces
 inputs: []

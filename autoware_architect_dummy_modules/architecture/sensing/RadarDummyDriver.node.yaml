@@ -2,8 +2,8 @@
 name: RadarDummyDriver.node
 
 launch:
-  package: autoware_perception_dummy_nodes
-  plugin: autoware::perception_dummy_nodes::RadarDummyDriver
+  package: autoware_architect_dummy_modules
+  plugin: autoware::architect_dummy_modules::RadarDummyDriver
 
 # interfaces
 inputs: []

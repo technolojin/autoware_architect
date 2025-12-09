@@ -2,8 +2,8 @@
 name: LocalizationDummy.node
 
 launch:
-  package: autoware_perception_dummy_nodes
-  plugin: autoware::perception_dummy_nodes::Localization
+  package: autoware_architect_dummy_modules
+  plugin: autoware::architect_dummy_modules::Localization
 
 # interfaces
 inputs:
@@ -23,6 +23,11 @@ outputs:
       durability: transient_local
   - name: kinematic_state
     message_type: nav_msgs/msg/Odometry
+    qos:
+      reliability: reliable
+      durability: transient_local
+  - name: acceleration
+    message_type: geometry_msgs/msg/AccelWithCovarianceStamped
     qos:
       reliability: reliable
       durability: transient_local

@@ -2,8 +2,8 @@
 name: CameraDummyDriver.node
 
 launch:
-  package: autoware_perception_dummy_nodes
-  plugin: autoware::perception_dummy_nodes::CameraDummyDriver
+  package: autoware_architect_dummy_modules
+  plugin: autoware::architect_dummy_modules::CameraDummyDriver
 
 # interfaces
 inputs: []

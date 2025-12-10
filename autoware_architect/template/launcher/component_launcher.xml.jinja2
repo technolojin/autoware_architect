@@ -7,7 +7,12 @@
 
 {% for node in nodes %}
   <!-- Node: {{ node.full_namespace }}/{{ node.name }} -->
-{% if node.use_container %}
+{% if node.is_command_execution %}
+  <group ns="{{ node.full_namespace }}">
+    <executable cmd="{{ node.executable_cmd }}" output="{{ node.node_output }}" name="$(var {{ node.name }})">
+    </executable>
+  </group>
+{% elif node.use_container %}
   <load_composable_node target="{{ node.container }}">
     <composable_node pkg="{{ node.package }}" plugin="{{ node.plugin }}" name="{{ node.name }}" namespace="{{ node.full_namespace }}">
       <!-- Remap input and output topics -->

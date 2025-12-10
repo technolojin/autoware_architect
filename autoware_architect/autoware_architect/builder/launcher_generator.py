@@ -75,66 +75,57 @@ def _extract_node_data(node_instance: Instance, module_path: List[str]) -> Dict[
     This function uses the already-parsed parameters from parameter_manager instead of
     re-parsing the node configuration.
     """
-    launch_config = node_instance.configuration.launch
-    
-    # Extract launch information
-    package = launch_config.get("package", "")
-    plugin = launch_config.get("plugin", "")
-    executable = launch_config.get("executable", "")
-    use_container = launch_config.get("use_container", False)  # Default to regular node
-    container = launch_config.get("container_name", "perception_container")
-    node_output = launch_config.get("node_output", "screen")
-    
+    node_data = {}
+    node_data["name"] = node_instance.name
     # Calculate namespace groups for nested push-ros-namespace
     # module_path contains the intermediate module names
-    namespace_groups = module_path.copy()
-    
-    # Calculate full namespace path for documentation
-    full_namespace_path = "/".join(module_path) if module_path else ""
-    
-    # Collect ports with resolved topics
-    ports = []
-    
-    # Add input ports
-    for port in node_instance.link_manager.get_all_in_ports():
-        topic = port.get_topic()
-        if topic == "":
-            continue
-        ports.append({
-            "direction": "input",
-            "name": port.name,
-            "topic": topic
-        })
-    
-    # Add output ports
-    for port in node_instance.link_manager.get_all_out_ports():
-        topic = port.get_topic()
-        if topic == "":
-            continue
-        ports.append({
-            "direction": "output",
-            "name": port.name,
-            "topic": topic
-        })
-    
-    # Get parameters and parameter files from parameter_manager
-    all_parameters = node_instance.parameter_manager.get_parameters_for_launch()
-    all_parameter_files = node_instance.parameter_manager.get_parameter_files_for_launch()
+    node_data["namespace_groups"] = module_path.copy()
+     # Calculate full namespace path for documentation
+    node_data["full_namespace_path"] = "/".join(module_path) if module_path else ""
 
-    return {
-        "name": node_instance.name,
-        "package": package,
-        "plugin": plugin,
-        "executable": executable,
-        "use_container": use_container,
-        "container": container,
-        "node_output": node_output,
-        "namespace_groups": namespace_groups,
-        "full_namespace_path": full_namespace_path,
-        "ports": ports,
-        "parameters": all_parameters,
-        "parameter_files": all_parameter_files
-    }
+    launch_config = node_instance.configuration.launch
+    # Extract launch information
+    node_data["package"] = launch_config.get("package", "")
+    node_data["executable_cmd"] = launch_config.get("executable_cmd", None) # command execution mode
+    is_command_execution = True if node_data["executable_cmd"] is not None else False
+    node_data["is_command_execution"] = is_command_execution
+    node_data["node_output"] = launch_config.get("node_output", "screen")
+
+    if is_command_execution is False:
+        node_data["plugin"] = launch_config.get("plugin", "")
+        node_data["executable"] = launch_config.get("executable", "")
+        node_data["use_container"] = launch_config.get("use_container", False)  # Default to regular node
+        node_data["container"] = launch_config.get("container_name", "perception_container")
+        
+        # Collect ports with resolved topics
+        ports = []
+        # Add input ports
+        for port in node_instance.link_manager.get_all_in_ports():
+            topic = port.get_topic()
+            if topic == "":
+                continue
+            ports.append({
+                "direction": "input",
+                "name": port.name,
+                "topic": topic
+            })
+        # Add output ports
+        for port in node_instance.link_manager.get_all_out_ports():
+            topic = port.get_topic()
+            if topic == "":
+                continue
+            ports.append({
+                "direction": "output",
+                "name": port.name,
+                "topic": topic
+            })
+        node_data["ports"] = ports
+        
+        # Get parameters and parameter files from parameter_manager
+        node_data["parameters"] =  node_instance.parameter_manager.get_parameters_for_launch()
+        node_data["parameter_files"] = node_instance.parameter_manager.get_parameter_files_for_launch()
+
+    return node_data
 
 
 def _generate_compute_unit_launcher(compute_unit: str, components: list, output_dir: str):

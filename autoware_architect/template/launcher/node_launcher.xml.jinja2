@@ -21,7 +21,11 @@
   <arg name="{{ param.name }}" default="{{ param.default_value }}"/>
 {% endfor %}
 
-{% if use_container %}
+{% if is_command_execution %}
+  <!-- Command execution mode -->
+  <executable cmd="{{ executable_cmd }}" output="{{ node_output }}">
+  </executable>
+{% elif use_container %}
   <load_composable_node target="{{ container_name }}">
     <composable_node pkg="{{ package_name }}" plugin="{{ plugin_name }}" name="$(var node_name)">
       <!-- Remap input and output topics -->

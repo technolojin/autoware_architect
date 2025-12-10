@@ -33,53 +33,50 @@ def create_node_launcher_xml(node_yaml) -> str:
     Returns:
         Generated XML content as string
     """
-    # Extract necessary information from the node YAML
-    launch_config = node_yaml.get("launch")
-    package_name = launch_config.get("package")
-    plugin_name = launch_config.get("plugin")
-    executable_name = launch_config.get("executable")
-    node_output = launch_config.get("node_output", "screen")
-    use_container = launch_config.get("use_container", False)
-    
-    if use_container and not launch_config.get("container_name"):
-        raise ValueError("Container name is required when use_container is True")
-    container_name = launch_config.get("container_name")
-
-    # Extract interface information
-    input_list = node_yaml.get("inputs", [])
-    output_list = node_yaml.get("outputs", [])
-
-    # Extract parameter set information
-    param_path_list = node_yaml.get("parameter_files", [])
-
-    # Extract parameter information
-    parameter_list = node_yaml.get("parameters", [])
-
-    # node name is snake case of the node name which the original is in pascal case
+    template_data = {}
+    # Node name: snake case of the node name which the original is in pascal case
     # e.g. ObjectDetector.node -> object_detector
     node_name = node_yaml.get("name").split(".")[0]
     node_name = pascal_to_snake(node_name)
+    template_data["node_name"] = node_name
 
-    # Prepare template data
-    template_data = {
-        'node_name': node_name,
-        'package_name': package_name,
-        'plugin_name': plugin_name,
-        'executable_name': executable_name,
-        'node_output': node_output,
-        'use_container': use_container,
-        'container_name': container_name,
-        'inputs': input_list,
-        'outputs': output_list,
-        'parameter_files': [
+    # Extract necessary information from the node YAML
+    launch_config = node_yaml.get("launch")
+
+    # Launch configuration
+    package_name = launch_config.get("package")
+    template_data["package_name"] = package_name
+    template_data["executable_cmd"] = launch_config.get("executable_cmd", None) # command execution mode
+    is_command_execution = True if template_data["executable_cmd"] is not None else False
+    template_data["is_command_execution"] = is_command_execution
+    template_data["node_output"] = launch_config.get("node_output", "screen")
+
+    if is_command_execution is False:
+        template_data["plugin_name"] = launch_config.get("plugin")
+        template_data["executable_name"] = launch_config.get("executable")
+        template_data["node_output"] = launch_config.get("node_output", "screen")
+        template_data["use_container"] = launch_config.get("use_container", False)
+
+        if template_data["use_container"] and not launch_config.get("container_name"):
+            raise ValueError("Container name is required when use_container is True")
+        template_data["container_name"] = launch_config.get("container_name")
+
+        # Extract interface information
+        template_data["inputs"] = node_yaml.get("inputs", [])
+        template_data["outputs"] = node_yaml.get("outputs", [])
+
+        # Extract parameter set information
+        param_path_list = node_yaml.get("parameter_files", [])
+        template_data["parameter_files"] = [
             {
                 'name': param_file.get('name'),
                 'default': _process_parameter_path(param_file.get('default'), package_name),
                 'allow_substs': str(param_file.get('allow_substs', False)).lower()
             }
             for param_file in param_path_list
-        ],
-        'parameters': [
+        ]
+        parameter_list = node_yaml.get("parameters", [])
+        template_data["parameters"] = [
             {
                 'name': param.get('name'),
                 'default_value': (
@@ -90,7 +87,6 @@ def create_node_launcher_xml(node_yaml) -> str:
             }
             for param in parameter_list
         ]
-    }
 
     # Initialize template renderer
     renderer = TemplateRenderer()
@@ -121,10 +117,10 @@ def generate_launcher(node_yaml_dir, launch_file_dir) -> None:
     if "launch" not in node_yaml:
         logger.error(f"Field 'launch' is required in node configuration., {node_yaml_dir}")
         return
-    
+
     launch_config = node_yaml.get("launch")
-    if "executable" not in launch_config:
-        logger.error(f"Field 'executable' is required in launch configuration., {node_yaml_dir}")
+    if "executable" not in launch_config and "executable_cmd" not in launch_config:
+        logger.error(f"Either 'executable' or 'executable_cmd' field is required in launch configuration., {node_yaml_dir}")
         return
     
     node_name = node_yaml.get("name")

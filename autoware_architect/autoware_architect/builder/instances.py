@@ -155,14 +155,14 @@ class Instance:
     def vis_guide(self) -> dict:
         """Get visualization guide including colors."""
         return {
-            "color": get_component_color(self.namespace, variant="matte"),
+            "color": get_component_color(self.namespace, variant="base"),
             "medium_color": get_component_color(self.namespace, variant="medium"),
             "background_color": get_component_color(self.namespace, variant="bright"),
-            "text_color": get_component_color(self.namespace, variant="text"),
-            "dark_color": get_component_color(self.namespace, variant="dark"),
-            "dark_medium_color": get_component_color(self.namespace, variant="dark_text"),  # Integrated dark+text variant for nodes
+            "text_color": get_component_color(self.namespace, variant="darkest"),
+            "dark_color": get_component_color(self.namespace, variant="fade"),
+            "dark_medium_color": get_component_color(self.namespace, variant="darkish"),  # Integrated dark+text variant for nodes
             "dark_background_color": get_component_color(self.namespace, variant="dark"),  # Pure dark variant for modules
-            "dark_text_color": "#e9ecef",  # Light text for dark mode readability
+            "dark_text_color": get_component_color(self.namespace, variant="bright"), 
             "position": get_component_position(self.namespace),
         }
 

@@ -48,8 +48,8 @@ def calculate_color_variant(base_color: str, variant: str) -> str:
     """
     r, g, b = hex_to_rgb(base_color)
 
-    if variant == "matte":
-        # Matte: use base color as-is
+    if variant == "base":
+        # Base: use base color as-is
         return base_color
     elif variant == "medium":
         # Medium: blend 50% base + 50% white for lighter background
@@ -65,27 +65,33 @@ def calculate_color_variant(base_color: str, variant: str) -> str:
             int(g * 0.2 + 255 * 0.8),
             int(b * 0.2 + 255 * 0.8)
         )
-    elif variant == "text":
-        # Text: darken by 30% for better contrast
+    elif variant == "fade":
+        # Fade: blend 70% base 
         return rgb_to_hex(
-            int(r * 0.3),
-            int(g * 0.3),
-            int(b * 0.3)
+            int(r * 0.7),
+            int(g * 0.7),
+            int(b * 0.7)
+        )
+    elif variant == "darkish":
+        # Darkish: blend 35% base 
+        return rgb_to_hex(
+            int(r * 0.39),
+            int(g * 0.39),
+            int(b * 0.39)
         )
     elif variant == "dark":
         # Dark: darken for dark mode backgrounds (darker than text variant)
         return rgb_to_hex(
-            int(r * 0.25),
-            int(g * 0.25),
-            int(b * 0.25)
+            int(r * 0.26),
+            int(g * 0.26),
+            int(b * 0.26)
         )
-    elif variant == "dark_text":
-        # Dark_Text: integrated variant combining dark and text characteristics for nodes
-        # Slightly lighter than pure dark but darker than text for better distinction
+    elif variant == "darkest":
+        # Darkest: blend 90% base 
         return rgb_to_hex(
-            int(r * 0.35),
-            int(g * 0.35),
-            int(b * 0.35)
+            int(r * 0.1),
+            int(g * 0.1),
+            int(b * 0.1)
         )
     else:
         return base_color

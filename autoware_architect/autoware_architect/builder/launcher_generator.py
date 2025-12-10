@@ -86,44 +86,44 @@ def _extract_node_data(node_instance: Instance, module_path: List[str]) -> Dict[
     launch_config = node_instance.configuration.launch
     # Extract launch information
     node_data["package"] = launch_config.get("package", "")
-    node_data["executable_cmd"] = launch_config.get("executable_cmd", None) # command execution mode
-    is_command_execution = True if node_data["executable_cmd"] is not None else False
-    node_data["is_command_execution"] = is_command_execution
+    node_data["ros2_launch_file"] = launch_config.get("ros2_launch_file", None) # command execution mode
+    is_ros2_file_launch = True if node_data["ros2_launch_file"] is not None else False
+    node_data["is_ros2_file_launch"] = is_ros2_file_launch
     node_data["node_output"] = launch_config.get("node_output", "screen")
 
-    if is_command_execution is False:
+    if is_ros2_file_launch is False:
         node_data["plugin"] = launch_config.get("plugin", "")
         node_data["executable"] = launch_config.get("executable", "")
         node_data["use_container"] = launch_config.get("use_container", False)  # Default to regular node
         node_data["container"] = launch_config.get("container_name", "perception_container")
         
-        # Collect ports with resolved topics
-        ports = []
-        # Add input ports
-        for port in node_instance.link_manager.get_all_in_ports():
-            topic = port.get_topic()
-            if topic == "":
-                continue
-            ports.append({
-                "direction": "input",
-                "name": port.name,
-                "topic": topic
-            })
-        # Add output ports
-        for port in node_instance.link_manager.get_all_out_ports():
-            topic = port.get_topic()
-            if topic == "":
-                continue
-            ports.append({
-                "direction": "output",
-                "name": port.name,
-                "topic": topic
-            })
-        node_data["ports"] = ports
+    # Collect ports with resolved topics
+    ports = []
+    # Add input ports
+    for port in node_instance.link_manager.get_all_in_ports():
+        topic = port.get_topic()
+        if topic == "":
+            continue
+        ports.append({
+            "direction": "input",
+            "name": port.name,
+            "topic": topic
+        })
+    # Add output ports
+    for port in node_instance.link_manager.get_all_out_ports():
+        topic = port.get_topic()
+        if topic == "":
+            continue
+        ports.append({
+            "direction": "output",
+            "name": port.name,
+            "topic": topic
+        })
+    node_data["ports"] = ports
         
-        # Get parameters and parameter files from parameter_manager
-        node_data["parameters"] =  node_instance.parameter_manager.get_parameters_for_launch()
-        node_data["parameter_files"] = node_instance.parameter_manager.get_parameter_files_for_launch()
+    # Get parameters and parameter files from parameter_manager
+    node_data["parameters"] =  node_instance.parameter_manager.get_parameters_for_launch()
+    node_data["parameter_files"] = node_instance.parameter_manager.get_parameter_files_for_launch()
 
     return node_data
 

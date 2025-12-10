@@ -46,12 +46,12 @@ def create_node_launcher_xml(node_yaml) -> str:
     # Launch configuration
     package_name = launch_config.get("package")
     template_data["package_name"] = package_name
-    template_data["executable_cmd"] = launch_config.get("executable_cmd", None) # command execution mode
-    is_command_execution = True if template_data["executable_cmd"] is not None else False
-    template_data["is_command_execution"] = is_command_execution
+    template_data["ros2_launch_file"] = launch_config.get("ros2_launch_file", None) # command execution mode
+    is_ros2_file_launch = True if template_data["ros2_launch_file"] is not None else False
+    template_data["is_ros2_file_launch"] = is_ros2_file_launch
     template_data["node_output"] = launch_config.get("node_output", "screen")
 
-    if is_command_execution is False:
+    if is_ros2_file_launch is False:
         template_data["plugin_name"] = launch_config.get("plugin")
         template_data["executable_name"] = launch_config.get("executable")
         template_data["node_output"] = launch_config.get("node_output", "screen")
@@ -61,32 +61,32 @@ def create_node_launcher_xml(node_yaml) -> str:
             raise ValueError("Container name is required when use_container is True")
         template_data["container_name"] = launch_config.get("container_name")
 
-        # Extract interface information
-        template_data["inputs"] = node_yaml.get("inputs", [])
-        template_data["outputs"] = node_yaml.get("outputs", [])
+    # Extract interface information
+    template_data["inputs"] = node_yaml.get("inputs", [])
+    template_data["outputs"] = node_yaml.get("outputs", [])
 
-        # Extract parameter set information
-        param_path_list = node_yaml.get("parameter_files", [])
-        template_data["parameter_files"] = [
-            {
-                'name': param_file.get('name'),
-                'default': _process_parameter_path(param_file.get('default'), package_name),
-                'allow_substs': str(param_file.get('allow_substs', False)).lower()
-            }
-            for param_file in param_path_list
-        ]
-        parameter_list = node_yaml.get("parameters", [])
-        template_data["parameters"] = [
-            {
-                'name': param.get('name'),
-                'default_value': (
-                    str(param.get('default')).lower()
-                    if param.get('type') == 'bool'
-                    else param.get('default')
-                )
-            }
-            for param in parameter_list
-        ]
+    # Extract parameter set information
+    param_path_list = node_yaml.get("parameter_files", [])
+    template_data["parameter_files"] = [
+        {
+            'name': param_file.get('name'),
+            'default': _process_parameter_path(param_file.get('default'), package_name),
+            'allow_substs': str(param_file.get('allow_substs', False)).lower()
+        }
+        for param_file in param_path_list
+    ]
+    parameter_list = node_yaml.get("parameters", [])
+    template_data["parameters"] = [
+        {
+            'name': param.get('name'),
+            'default_value': (
+                str(param.get('default')).lower()
+                if param.get('type') == 'bool'
+                else param.get('default')
+            )
+        }
+        for param in parameter_list
+    ]
 
     # Initialize template renderer
     renderer = TemplateRenderer()
@@ -119,8 +119,8 @@ def generate_launcher(node_yaml_dir, launch_file_dir) -> None:
         return
 
     launch_config = node_yaml.get("launch")
-    if "executable" not in launch_config and "executable_cmd" not in launch_config:
-        logger.error(f"Either 'executable' or 'executable_cmd' field is required in launch configuration., {node_yaml_dir}")
+    if "executable" not in launch_config and "ros2_launch_file" not in launch_config:
+        logger.error(f"Either 'executable' or 'ros2_launch_file' field is required in launch configuration., {node_yaml_dir}")
         return
     
     node_name = node_yaml.get("name")

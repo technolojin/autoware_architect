@@ -180,6 +180,10 @@ class ParameterTemplateGenerator:
             if param.parameter_type in [ParameterType.DEFAULT_FILE, ParameterType.OVERRIDE_FILE]:
                 continue
 
+            # Skip global parameters - these are system-wide and not node-specific
+            if param.parameter_type == ParameterType.GLOBAL:
+                continue
+
             configuration = {
                 "name": param.name,
                 "type": param.data_type,

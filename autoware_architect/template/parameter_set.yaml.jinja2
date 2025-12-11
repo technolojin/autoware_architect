@@ -1,4 +1,5 @@
 name: {{ name }}
+{% if parameters %}
 parameters:
 {% for node in parameters %}
   - node: {{ node.node }}
@@ -20,3 +21,6 @@ parameters:
     parameters: []
 {% endif %}
 {% endfor %}
+{% else %}
+parameters: []
+{% endif %}

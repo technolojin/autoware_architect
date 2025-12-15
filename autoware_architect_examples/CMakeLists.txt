@@ -11,7 +11,6 @@ ament_auto_package(
   architecture
 )
 
-autoware_architect_configure()
 
 autoware_architect_generate_launcher()
 

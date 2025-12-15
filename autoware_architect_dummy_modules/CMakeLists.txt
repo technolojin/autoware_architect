@@ -9,4 +9,3 @@ ament_auto_package(
   architecture
 )
 
-autoware_architect_configure(dummy_modules)

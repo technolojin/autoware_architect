@@ -5,6 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 # Install Python package
 ament_python_install_package(${PROJECT_NAME})
@@ -20,6 +21,17 @@ install(
   DIRECTORY script/
   DESTINATION share/${PROJECT_NAME}/script
   USE_SOURCE_PERMISSIONS
+)
+
+# Collect system descriptions
+# Scans the workspace source directory
+# and generates resource manifests in the build directory.
+add_custom_target(collect_autoware_descriptions ALL
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/script/collect_autoware_descriptions.py
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_BINARY_DIR}/resource
+    ${CMAKE_INSTALL_PREFIX}
+  COMMENT "Collecting autoware system descriptions"
 )
 
 ament_package(

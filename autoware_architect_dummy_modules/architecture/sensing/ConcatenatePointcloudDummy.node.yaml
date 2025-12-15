@@ -1,4 +1,5 @@
-# node information
+autoware_description_format: v0.1.0
+
 name: ConcatenatePointcloudDummy.node
 
 launch:

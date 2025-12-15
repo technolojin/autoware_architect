@@ -1,5 +1,4 @@
-autoware_system_description:
-  version: 0.1.0
+autoware_description_format: v0.1.0
 
 name: RadarDummy.module
 

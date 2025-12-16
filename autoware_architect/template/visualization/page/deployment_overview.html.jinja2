@@ -574,29 +574,119 @@
         }
 
         function updateInfoPanel(data, type) {
-            let html = `<div class="info-card"><div class="info-title">${type} Details</div>`;
+            // Helper to check if empty
+            const isEmpty = (val) => !val || (Array.isArray(val) && val.length === 0) || (typeof val === 'object' && Object.keys(val).length === 0);
+            
+            let html = '';
 
-            function displayProps(obj) {
-                let str = '';
-                for (const [key, value] of Object.entries(obj)) {
-                    if (['id', 'children', 'edges', 'ports', 'layoutOptions', 'width', 'height', 'x', 'y', 'source', 'target', 'sections'].includes(key)) continue;
-
-                    let displayValue = value;
-                    if (typeof value === 'object' && value !== null) {
-                        if (Array.isArray(value)) displayValue = '[' + value.length + ']';
-                        else displayValue = '{...}';
-                    }
-
-                    str += `<div class="info-row">
-                        <span class="info-label">${key}:</span>
-                        <span class="info-value">${displayValue}</span>
-                    </div>`;
+            // --- 1. Info Block ---
+            let infoHtml = '';
+            // Fields explicitly excluded from Info block or handled in other blocks
+            const ignoredKeys = ['id', 'children', 'edges', 'ports', 'layoutOptions', 'width', 'height', 'x', 'y', 'source', 'target', 'sections', 'vis_guide', 'in_ports', 'out_ports', 'parameters'];
+            
+            let hasInfo = false;
+            for (const [key, value] of Object.entries(data)) {
+                if (ignoredKeys.includes(key)) continue;
+                
+                let displayValue = value;
+                if (typeof value === 'object' && value !== null) {
+                    if (Array.isArray(value)) displayValue = '[' + value.length + ']';
+                    else displayValue = '{...}';
                 }
-                return str;
+                
+                infoHtml += `<div class="info-row">
+                    <span class="info-label">${key}:</span>
+                    <span class="info-value">${displayValue}</span>
+                </div>`;
+                hasInfo = true;
             }
 
-            html += displayProps(data);
-            html += '</div>';
+            if (hasInfo) {
+                html += `<div class="info-card">
+                    <div class="info-title">Info</div>
+                    ${infoHtml}
+                </div>`;
+            }
+
+            // --- 2. Interface Block ---
+            const inPorts = data.in_ports || [];
+            const outPorts = data.out_ports || [];
+            
+            if (inPorts.length > 0 || outPorts.length > 0) {
+                let interfaceHtml = '';
+                
+                if (inPorts.length > 0) {
+                     interfaceHtml += `<div style="margin-bottom: 15px;">
+                        <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 8px;">Input Ports</div>`;
+                     inPorts.forEach(port => {
+                        const name = port.name || 'Unnamed';
+                        const type = port.msg_type || port.type || '';
+                        interfaceHtml += `<div style="margin-bottom: 8px; font-size: 13px;">
+                            <div style="font-weight: 500; color: var(--text-primary);">${name}</div>
+                            ${type ? `<div style="color: var(--text-muted); font-size: 11px; font-family: 'Consolas', monospace; margin-top: 1px;">${type}</div>` : ''}
+                        </div>`;
+                     });
+                     interfaceHtml += `</div>`;
+                }
+                
+                if (outPorts.length > 0) {
+                     interfaceHtml += `<div>
+                        <div style="font-size: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); padding-bottom: 4px; margin-bottom: 8px;">Output Ports</div>`;
+                     outPorts.forEach(port => {
+                        const name = port.name || 'Unnamed';
+                        const type = port.msg_type || port.type || '';
+                        interfaceHtml += `<div style="margin-bottom: 8px; font-size: 13px;">
+                            <div style="font-weight: 500; color: var(--text-primary);">${name}</div>
+                            ${type ? `<div style="color: var(--text-muted); font-size: 11px; font-family: 'Consolas', monospace; margin-top: 1px;">${type}</div>` : ''}
+                        </div>`;
+                     });
+                     interfaceHtml += `</div>`;
+                }
+
+                html += `<div class="info-card">
+                    <div class="info-title">Interface</div>
+                    ${interfaceHtml}
+                </div>`;
+            }
+
+            // --- 3. Parameter Block ---
+            const params = data.parameters;
+            if (!isEmpty(params)) {
+                 let parameterHtml = `<div style="max-height: 400px; overflow-y: auto;">`;
+                 
+                 if (typeof params === 'object' && !Array.isArray(params)) {
+                    for (const [pName, pVal] of Object.entries(params)) {
+                        let displayVal = pVal;
+                        if (typeof pVal === 'object') displayVal = JSON.stringify(pVal);
+                        parameterHtml += `<div style="padding: 6px 0; border-bottom: 1px solid var(--border-color);">
+                            <div style="font-size: 12px; font-weight: 500; color: var(--text-secondary); margin-bottom: 2px; word-break: break-all;">${pName}</div>
+                            <div style="font-family: 'Consolas', monospace; font-size: 12px; color: var(--text-primary); word-break: break-all; padding-left: 8px;">${displayVal}</div>
+                        </div>`;
+                    }
+                 } else if (Array.isArray(params)) {
+                     params.forEach(p => {
+                          let displayVal = p.value;
+                          if (typeof displayVal === 'object') displayVal = JSON.stringify(displayVal);
+                          
+                          parameterHtml += `<div style="padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start;">
+                              <div style="font-size: 12px; font-weight: 500; color: var(--text-secondary); word-break: break-all; margin-right: 10px; flex: 1;">${p.name}</div>
+                              <div style="font-family: 'Consolas', monospace; font-size: 12px; color: var(--text-primary); word-break: break-all; text-align: right; flex: 1;">${displayVal}</div>
+                          </div>`;
+                     });
+                 }
+                parameterHtml += `</div>`;
+
+                html += `<div class="info-card">
+                    <div class="info-title">Parameter</div>
+                    ${parameterHtml}
+                </div>`;
+            }
+            
+            // Fallback
+            if (!html) {
+                 html = `<div class="info-card"><div class="info-title">${type} Details</div><div class="info-row">No details available</div></div>`;
+            }
+
             infoPanel.innerHTML = html;
         }
 

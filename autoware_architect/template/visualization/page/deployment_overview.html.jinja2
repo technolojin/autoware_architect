@@ -67,7 +67,7 @@
 
         /* Sidebar */
         #sidebar {
-            width: 250px;
+            width: 300px;
             background: var(--bg-sidebar);
             border-right: 1px solid var(--border-color);
             display: flex;
@@ -589,7 +589,10 @@
                 if (ignoredKeys.includes(key)) continue;
                 
                 let displayValue = value;
-                if (typeof value === 'object' && value !== null) {
+                
+                if (key === 'namespace' && Array.isArray(value)) {
+                    displayValue = '/' + value.join('/');
+                } else if (typeof value === 'object' && value !== null) {
                     if (Array.isArray(value)) displayValue = '[' + value.length + ']';
                     else displayValue = '{...}';
                 }
@@ -844,8 +847,8 @@
             document.addEventListener('mousemove', (e) => {
                 if (!isResizing) return;
                 
-                // Calculate new width (constrain between 150px and 500px)
-                const newWidth = Math.min(Math.max(e.clientX, 150), 500);
+                // Calculate new width (constrain between 150px and 700px)
+                const newWidth = Math.min(Math.max(e.clientX, 150), 700);
                 sidebar.style.width = `${newWidth}px`;
                 
                 // Resize diagram if needed (trigger resize event)

@@ -86,11 +86,32 @@
             margin: 0 0 10px 0;
             font-size: 18px;
             color: var(--text-primary);
+            overflow-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.3;
+        }
+
+        #sidebar-resizer {
+            width: 6px;
+            cursor: col-resize;
+            background: transparent;
+            margin-left: -3px;
+            z-index: 100;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        #sidebar-resizer:hover, #sidebar-resizer.resizing {
+            background: var(--border-active);
+            opacity: 0.5;
         }
 
         #sidebar-header .package-info {
             font-size: 14px;
             color: var(--text-muted);
+            overflow-wrap: break-word;
+            word-break: break-word;
+            line-height: 1.3;
         }
 
         #diagram-list {
@@ -460,6 +481,8 @@
             <!-- Node details will be populated here -->
         </div>
     </div>
+    
+    <div id="sidebar-resizer"></div>
 
     <!-- Canvas Container -->
     <div id="canvas-container">
@@ -715,10 +738,52 @@
 
         darkModeToggle.addEventListener('click', toggleDarkMode);
 
+        // Resizer functionality
+        function initializeResizer() {
+            const sidebar = document.getElementById('sidebar');
+            const resizer = document.getElementById('sidebar-resizer');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                resizer.classList.add('resizing');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                
+                // Calculate new width (constrain between 150px and 500px)
+                const newWidth = Math.min(Math.max(e.clientX, 150), 500);
+                sidebar.style.width = `${newWidth}px`;
+                
+                // Resize diagram if needed (trigger resize event)
+                if (currentDiagramModule && typeof currentDiagramModule.fitToScreen === 'function') {
+                    // Optional: re-fit or update layout
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    resizer.classList.remove('resizing');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                    
+                    // Trigger window resize event to update diagram size/layout
+                    window.dispatchEvent(new Event('resize'));
+                }
+            });
+        }
+
         // Initialize
         window.addEventListener('load', () => {
             // Initialize theme
             initializeTheme();
+            
+            // Initialize resizer
+            initializeResizer();
 
             // Wait a bit more to ensure all scripts are fully loaded
             setTimeout(() => {

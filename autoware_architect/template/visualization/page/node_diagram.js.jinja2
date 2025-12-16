@@ -302,13 +302,19 @@ class NodeDiagramModule {
             e.preventDefault();
             const zoomIntensity = 0.1;
             const delta = e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
-            const newScale = this.transform.k * (1 + delta);
+            const oldScale = this.transform.k;
+            const proposedScale = oldScale * (1 + delta);
+            const newScale = Math.min(Math.max(proposedScale, 0.03), 5);
+            const scaleRatio = newScale / oldScale;
+
             const rect = svgRoot.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            this.transform.x -= (mouseX - this.transform.x) * delta;
-            this.transform.y -= (mouseY - this.transform.y) * delta;
-            this.transform.k = Math.min(Math.max(newScale, 0.1), 5);
+            // Zoom relative to the center of the viewport to keep the center stable
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            this.transform.x = centerX - (centerX - this.transform.x) * scaleRatio;
+            this.transform.y = centerY - (centerY - this.transform.y) * scaleRatio;
+            this.transform.k = newScale;
             this.updateTransform(svg);
         });
 

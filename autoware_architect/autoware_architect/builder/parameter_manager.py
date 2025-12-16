@@ -161,7 +161,33 @@ class ParameterManager:
         if is_default_file and package_name and config_registry:
             pkg_path = config_registry.get_package_path(package_name)
             if pkg_path:
-                return os.path.join(pkg_path, path)
+                resolved_path = os.path.join(pkg_path, path)
+                if os.path.exists(resolved_path):
+                    return resolved_path
+
+                # Fallback: Check if it's a generated file in install directory
+                # This handles cases where config files are generated during build (e.g. from schema)
+                # and are not present in the source directory.
+                try:
+                    # Iterate up to find a directory containing 'src' and 'install' (workspace root)
+                    current_dir = pkg_path
+                    workspace_root = None
+                    while len(current_dir) > 1:
+                        if os.path.exists(os.path.join(current_dir, 'src')) and os.path.exists(os.path.join(current_dir, 'install')):
+                            workspace_root = current_dir
+                            break
+                        current_dir = os.path.dirname(current_dir)
+                    
+                    if workspace_root:
+                        # Construct install path: install/<package>/share/<package>/<path>
+                        install_path = os.path.join(workspace_root, 'install', package_name, 'share', package_name, path)
+                        if os.path.exists(install_path):
+                            logger.debug(f"Resolved generated parameter file in install: {install_path}")
+                            return install_path
+                except Exception as e:
+                    logger.debug(f"Failed to resolve fallback path: {e}")
+
+                return resolved_path
 
         # For parameter files without registry (or fallback), add package prefix for launch file
         if is_default_file and package_name:
@@ -213,6 +239,13 @@ class ParameterManager:
                         param_path,
                         allow_substs=True,
                         is_override=True  # Parameter set parameter files are overrides
+                    )
+
+                    # Load parameters from this file for visualization
+                    target_instance.parameter_manager._load_parameters_from_file(
+                        param_path,
+                        is_override=True,
+                        config_registry=config_registry
                     )
         
         # Apply parameters (these override parameter files)

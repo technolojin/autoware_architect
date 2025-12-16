@@ -655,7 +655,7 @@
             // --- 3. Parameter Block ---
             const params = data.parameters;
             if (!isEmpty(params)) {
-                 let parameterHtml = `<div style="max-height: 400px; overflow-y: auto;">`;
+                 let parameterHtml = `<div>`;
                  
                  if (typeof params === 'object' && !Array.isArray(params)) {
                     for (const [pName, pVal] of Object.entries(params)) {

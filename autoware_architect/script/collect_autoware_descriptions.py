@@ -33,7 +33,7 @@ def check_file_for_description(filepath):
     try:
         with open(filepath, 'r') as f:
             content = yaml.safe_load(f)
-            if content and isinstance(content, dict) and 'autoware_description_format' in content:
+            if content and isinstance(content, dict) and 'autoware_system_design_format' in content:
                 return True
     except:
         pass

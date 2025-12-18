@@ -422,7 +422,14 @@ class Instance:
                 else []
             ),
             "events": self.event_manager.get_all_events(),
-            "parameters": self.parameter_manager.get_all_parameters(),
+            "parameters": [
+                {
+                    "name": p.name,
+                    "value": p.value,
+                    "type": p.data_type,
+                    "parameter_type": p.parameter_type.name if hasattr(p.parameter_type, 'name') else str(p.parameter_type)
+                } for p in self.parameter_manager.get_all_parameters()
+            ],
         }
         
         # Add mode information if this is a deployment instance

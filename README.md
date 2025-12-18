@@ -1,4 +1,4 @@
-# Auotware System Designer (AWArch)
+# Auotware System Designer
 
 **Auotware System Designer** is a comprehensive toolset designed to define, build, and deploy Autoware systems in a modular and structured way. It allows developers to describe the software architecture using configuration files (YAML) and automatically generates system artifacts such as ROS 2 launch files, visualization diagrams, and parameter templates.
 
